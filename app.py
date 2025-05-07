@@ -118,6 +118,10 @@ def delete_task(task_id):
     db.session.commit()
     return '', 204
 
+@app.route('/')
+def home():
+    return "Welcome to the Task Tracker API!"
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

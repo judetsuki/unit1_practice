@@ -1,0 +1,1 @@
+.\venv_new\Scripts\python -m pytest test_app.py -v
