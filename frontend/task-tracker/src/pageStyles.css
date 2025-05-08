@@ -67,3 +67,10 @@
   color: #a0aec0; /* text-gray-500 */
   font-style: italic;
 }
+
+.priority-flag {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
