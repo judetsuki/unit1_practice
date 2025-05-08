@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './pageStyles.css';
 import './buttonStyles.css';
 
@@ -6,6 +6,8 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [taskText, setTaskText] = useState('');
   const [flagStates, setFlagStates] = useState({});
+  const [openMenuTaskId, setOpenMenuTaskId] = useState(null);
+  const [menuTexts, setMenuTexts] = useState({}); // Store text for each task's menu
 
   const addTask = (e) => {
     e.preventDefault();
@@ -26,6 +28,14 @@ function App() {
       delete newFlags[id];
       return newFlags;
     });
+    setMenuTexts((prev) => {
+      const newTexts = { ...prev };
+      delete newTexts[id];
+      return newTexts;
+    });
+    if (openMenuTaskId === id) {
+      setOpenMenuTaskId(null);
+    }
   };
 
   const toggleComplete = (id) => {
@@ -42,6 +52,40 @@ function App() {
       [id]: !prev[id],
     }));
   };
+
+  const toggleMenu = (id) => {
+    setOpenMenuTaskId((prev) => (prev === id ? null : id));
+  };
+
+  const handleMenuTextChange = (id, value) => {
+    setMenuTexts((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  function TaskMenu({ value, onChange }) {
+    const textareaRef = useRef(null);
+
+    useEffect(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height =
+          textareaRef.current.scrollHeight + 'px';
+      }
+    }, [value]);
+
+    return (
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={onChange}
+        className='task-menu-textarea'
+        placeholder='Write notes here...'
+        style={{ overflow: 'hidden' }}
+      />
+    );
+  }
 
   return (
     <div className='container'>
@@ -69,17 +113,28 @@ function App() {
               {task.text}
             </span>
             {!task.completed && (
-              <img
-                src='/flag.png'
-                alt='Priority'
-                className='priority-flag'
-                title='Priority Task'
-                style={{
-                  opacity: flagStates[task.id] ? 1 : 0.5,
-                  cursor: 'pointer',
-                }}
-                onClick={() => toggleFlagOpacity(task.id)}
-              />
+              <>
+                <img
+                  src='/paperstack.png'
+                  alt='Notes'
+                  className='paperstack-icon'
+                  title='Open Notes'
+                  onClick={() => toggleMenu(task.id)}
+                  style={{ cursor: 'pointer', marginLeft: '8px' }}
+                />
+                <img
+                  src='/flag.png'
+                  alt='Priority'
+                  className='priority-flag'
+                  title='Priority Task'
+                  style={{
+                    opacity: flagStates[task.id] ? 1 : 0.5,
+                    cursor: 'pointer',
+                    marginLeft: '8px',
+                  }}
+                  onClick={() => toggleFlagOpacity(task.id)}
+                />
+              </>
             )}
             <button
               onClick={() => deleteTask(task.id)}
@@ -90,6 +145,24 @@ function App() {
           </li>
         ))}
       </ul>
+      {openMenuTaskId !== null && (
+        <div className='task-menu'>
+          <textarea
+            value={menuTexts[openMenuTaskId] || ''}
+            onChange={(e) =>
+              handleMenuTextChange(openMenuTaskId, e.target.value)
+            }
+            className='task-menu-textarea'
+            placeholder='Write notes here...'
+          />
+          <button
+            onClick={() => setOpenMenuTaskId(null)}
+            className='task-menu-close-button'
+          >
+            Close
+          </button>
+        </div>
+      )}
     </div>
   );
 }
