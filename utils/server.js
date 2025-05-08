@@ -3,7 +3,7 @@ import express from 'express';
 const app = express();
 app.use(express.json());
 
-const FLASK_API = 'https://task-tracker-daniel.loca.lt';
+const FLASK_API = process.env.FLASK_API || 'https://task-tracker-daniel.loca.lt';
 
 // POST task → forward to Flask
 app.post('/tasks', async (req, res) => {
