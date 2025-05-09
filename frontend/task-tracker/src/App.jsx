@@ -2,12 +2,42 @@ import React, { useState, useRef, useEffect } from 'react';
 import './pageStyles.css';
 import './buttonStyles.css';
 
+const TaskMenu = React.memo(function TaskMenu({ value, onChange }) {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      const textarea = textareaRef.current;
+      const { selectionStart, selectionEnd } = textarea;
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+      textarea.setSelectionRange(selectionStart, selectionEnd);
+      textarea.focus();
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className='task-menu-textarea'
+      placeholder='Write notes here...'
+      style={{ overflow: 'hidden', direction: 'ltr', textAlign: 'left' }}
+    />
+  );
+});
+
 function App() {
   const [tasks, setTasks] = useState([]);
   const [taskText, setTaskText] = useState('');
   const [flagStates, setFlagStates] = useState({});
   const [openMenuTaskId, setOpenMenuTaskId] = useState(null);
-  const [menuTexts, setMenuTexts] = useState({}); // Store text for each task's menu
+  const [menuTexts, setMenuTexts] = useState({}); 
+  const [tempMenuText, setTempMenuText] = useState(''); 
+
+  const containerRef = useRef(null);
+  const taskRefs = useRef({}); 
 
   const addTask = (e) => {
     e.preventDefault();
@@ -35,6 +65,7 @@ function App() {
     });
     if (openMenuTaskId === id) {
       setOpenMenuTaskId(null);
+      setTempMenuText('');
     }
   };
 
@@ -54,41 +85,74 @@ function App() {
   };
 
   const toggleMenu = (id) => {
-    setOpenMenuTaskId((prev) => (prev === id ? null : id));
+    if (openMenuTaskId === id) {
+
+      setOpenMenuTaskId(null);
+      setTempMenuText('');
+    } else {
+
+      setOpenMenuTaskId(id);
+      setTempMenuText(menuTexts[id] || '');
+    }
   };
 
-  const handleMenuTextChange = (id, value) => {
-    setMenuTexts((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+  const handleTempMenuTextChange = (value) => {
+    setTempMenuText(value);
   };
 
-  function TaskMenu({ value, onChange }) {
-    const textareaRef = useRef(null);
+  const handleSave = () => {
+    if (openMenuTaskId !== null) {
+      setMenuTexts((prev) => ({
+        ...prev,
+        [openMenuTaskId]: tempMenuText,
+      }));
+      setOpenMenuTaskId(null);
+      setTempMenuText('');
+    }
+  };
 
-    useEffect(() => {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height =
-          textareaRef.current.scrollHeight + 'px';
-      }
-    }, [value]);
+  const handleClose = () => {
+    setOpenMenuTaskId(null);
+    setTempMenuText('');
+  };
 
-    return (
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={onChange}
-        className='task-menu-textarea'
-        placeholder='Write notes here...'
-        style={{ overflow: 'hidden' }}
-      />
-    );
-  }
+
+  const [menuStyle, setMenuStyle] = useState({});
+
+  useEffect(() => {
+    if (
+      openMenuTaskId !== null &&
+      taskRefs.current[openMenuTaskId] &&
+      containerRef.current
+    ) {
+      const taskEl = taskRefs.current[openMenuTaskId];
+      const containerEl = containerRef.current;
+
+      const containerRect = containerEl.getBoundingClientRect();
+      const taskRect = taskEl.getBoundingClientRect();
+
+      const top = taskRect.bottom - containerRect.top + 5;
+      const left = 0;
+      const width = containerEl.clientWidth;
+
+      setMenuStyle({
+        position: 'absolute',
+        top: top + 'px',
+        left: left + 'px',
+        width: width + 'px',
+        zIndex: 1000,
+        backgroundColor: 'white',
+        border: '1px solid #ccc',
+        padding: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+      });
+    } else {
+      setMenuStyle({});
+    }
+  }, [openMenuTaskId, tasks]);
 
   return (
-    <div className='container'>
+    <div className='container' style={{ position: 'relative' }} ref={containerRef}>
       <h1 className='heading'>Task Tracker</h1>
       <form onSubmit={addTask} className='form'>
         <input
@@ -108,6 +172,7 @@ function App() {
           <li
             key={task.id}
             className={`list-item${task.completed ? ' completed' : ''}`}
+            ref={(el) => (taskRefs.current[task.id] = el)}
           >
             <span onClick={() => toggleComplete(task.id)} className='task-text'>
               {task.text}
@@ -118,7 +183,7 @@ function App() {
                   src='/paperstack.png'
                   alt='Notes'
                   className='paperstack-icon'
-                  title='Open Notes'
+                  title='Edit'
                   onClick={() => toggleMenu(task.id)}
                   style={{ cursor: 'pointer', marginLeft: '8px' }}
                 />
@@ -136,29 +201,19 @@ function App() {
                 />
               </>
             )}
-            <button
-              onClick={() => deleteTask(task.id)}
-              className='delete-button'
-            >
+            <button onClick={() => deleteTask(task.id)} className='delete-button'>
               &times;
             </button>
           </li>
         ))}
       </ul>
       {openMenuTaskId !== null && (
-        <div className='task-menu'>
-          <textarea
-            value={menuTexts[openMenuTaskId] || ''}
-            onChange={(e) =>
-              handleMenuTextChange(openMenuTaskId, e.target.value)
-            }
-            className='task-menu-textarea'
-            placeholder='Write notes here...'
-          />
-          <button
-            onClick={() => setOpenMenuTaskId(null)}
-            className='task-menu-close-button'
-          >
+        <div className='task-menu' style={menuStyle}>
+          <TaskMenu value={tempMenuText} onChange={handleTempMenuTextChange} />
+          <button onClick={handleSave} className='task-menu-save-button'>
+            Save
+          </button>
+          <button onClick={handleClose} className='task-menu-close-button'>
             Close
           </button>
         </div>

@@ -68,19 +68,6 @@
   font-style: italic;
 }
 
-.priority-flag {
-  width: 20px;
-  height: 20px;
-  margin-left: 10px;
-  vertical-align: middle;
-}
-
-.paperstack-icon {
-  width: 20px;
-  height: 20px;
-  vertical-align: middle;
-}
-
 .task-menu {
   margin-top: 10px;
   padding: 10px;
@@ -104,16 +91,3 @@
   box-sizing: border-box;
 }
 
-.task-menu-close-button {
-  margin-top: 8px;
-  padding: 6px 12px;
-  background-color: #d9534f;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.task-menu-close-button:hover {
-  background-color: #c9302c;
-}

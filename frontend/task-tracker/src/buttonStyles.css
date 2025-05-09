@@ -28,3 +28,47 @@
 .delete-button:hover {
   color: #c53030; /* hover:text-red-700 */
 }
+
+.task-menu-close-button {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.task-menu-close-button:hover {
+  background-color: #c9302c;
+}
+
+
+.task-menu-save-button{
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #00ff40;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.task-menu-save-button:hover {
+  background-color: #3fac00;
+}
+
+/* флаг приоритета */
+.priority-flag {  
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+/* кнопка откытия заметок на тасках */
+.paperstack-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
