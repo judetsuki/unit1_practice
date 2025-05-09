@@ -201,7 +201,14 @@ function App() {
                 />
               </>
             )}
-            <button onClick={() => deleteTask(task.id)} className='delete-button'>
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this task?')) {
+                  deleteTask(task.id);
+                }
+              }}
+              className='delete-button'
+            >
               &times;
             </button>
           </li>
