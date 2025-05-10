@@ -64,11 +64,34 @@
   height: 20px;
   margin-left: 10px;
   vertical-align: middle;
+  cursor: pointer;
 }
+
 
 /* кнопка откытия заметок на тасках */
 .paperstack-icon {
   width: 20px;
   height: 20px;
   vertical-align: middle;
+  cursor: 'pointer';
+  margin-left: '10px';
 }
+
+.paperstack-icon:hover{
+  opacity: 0.7;
+}
+
+/* кнопка изменения названия таска */
+.edit-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 7px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.edit-icon:hover {
+  opacity: 0.7;
+}
+

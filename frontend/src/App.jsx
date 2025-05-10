@@ -44,6 +44,8 @@ function App() {
   const [openMenuTaskId, setOpenMenuTaskId] = useState(null);
   const [menuTexts, setMenuTexts] = useState({});
   const [tempMenuText, setTempMenuText] = useState('');
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingTaskTitle, setEditingTaskTitle] = useState('');
 
   const containerRef = useRef(null);
   const taskRefs = useRef({});
@@ -163,54 +165,92 @@ function App() {
         <button type='submit' className='button'>Add</button>
       </form>
 
-      <ul className='list'>
-        {tasks.length === 0 && <li className='no-tasks'>No tasks yet</li>}
-        {tasks.map((task) => (
-          <li
-            key={task.id}
-            className={`list-item${task.completed ? ' completed' : ''}`}
-            ref={(el) => (taskRefs.current[task.id] = el)}
-          >
-            <span onClick={() => toggleComplete(task.id)} className='task-text'>
-              {task.text}
-            </span>
-            {!task.completed && (
-              <>
-                <img
-                  src='/assets/paperstack.png'
-                  alt='Notes'
-                  className='paperstack-icon'
-                  title='Edit'
-                  onClick={() => toggleMenu(task.id)}
-                  style={{ cursor: 'pointer', marginLeft: '8px' }}
-                />
-                <img
-                  src='/assets/flag.png'
-                  alt='Priority'
-                  className='priority-flag'
-                  title='Priority Task'
-                  style={{
-                    opacity: flagStates[task.id] ? 1 : 0.5,
-                    cursor: 'pointer',
-                    marginLeft: '8px',
-                  }}
-                  onClick={() => toggleFlagOpacity(task.id)}
-                />
-              </>
-            )}
-            <button
-              onClick={() => {
-                if (window.confirm('Are you sure you want to delete this task?')) {
-                  deleteTask(task.id);
-                }
-              }}
-              className='delete-button'
+        <ul className='list'>
+          {tasks.length === 0 && <li className='no-tasks'>No tasks yet</li>}
+          {tasks.map((task) => (
+            <li
+              key={task.id}
+              className={`list-item${task.completed ? ' completed' : ''}`}
+              ref={(el) => (taskRefs.current[task.id] = el)}
             >
-              &times;
-            </button>
-          </li>
-        ))}
-      </ul>
+              {editingTaskId === task.id ? (
+                <input
+                  type='text'
+                  value={editingTaskTitle}
+                  onChange={(e) => setEditingTaskTitle(e.target.value)}
+                  onBlur={() => {
+                    if (editingTaskTitle.trim() === '') {
+                      setEditingTaskTitle(task.text);
+                    } else {
+                      setTasks((prevTasks) =>
+                        prevTasks.map((t) =>
+                          t.id === task.id ? { ...t, text: editingTaskTitle } : t
+                        )
+                      );
+                    }
+                    setEditingTaskId(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.target.blur();
+                    }
+                    if (e.key === 'Escape') {
+                      setEditingTaskTitle(task.text);
+                      setEditingTaskId(null);
+                    }
+                  }}
+                  autoFocus
+                  className='task-edit-input'
+                />
+              ) : (
+                <span onClick={() => toggleComplete(task.id)} className='task-text'>
+                  {task.text}
+                </span>
+              )}
+              {!task.completed && (
+                <>
+                  <img
+                    src='/assets/edit.png'
+                    alt='Edit Task Title'
+                    className='edit-icon'
+                    title='Edit Task Title'
+                    onClick={() => {
+                      setEditingTaskId(task.id);
+                      setEditingTaskTitle(task.text);
+                    }}
+                  />
+                  <img
+                    src='/assets/paperstack.png'
+                    alt='Notes'
+                    className='paperstack-icon'
+                    title='Edit'
+                    onClick={() => toggleMenu(task.id)}
+                  />
+                  <img
+                    src='/assets/flag.png'
+                    alt='Priority'
+                    className='priority-flag'
+                    title='Priority Task'
+                    style={{
+                      opacity: flagStates[task.id] ? 1 : 0.5,
+                    }}
+                    onClick={() => toggleFlagOpacity(task.id)}
+                  />
+                </>
+              )}
+              <button
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this task?')) {
+                    deleteTask(task.id);
+                  }
+                }}
+                className='delete-button'
+              >
+                &times;
+              </button>
+            </li>
+          ))}
+        </ul>
       {openMenuTaskId !== null && (
         <div className='task-menu' style={menuStyle}>
           <TaskMenu
