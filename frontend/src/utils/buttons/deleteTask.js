@@ -1,8 +1,8 @@
 import deleteTaskFromServer from '../deleteTaskFromServer.js';
 import getTasksFromServer from '../getTasksFromServer.js';
-import { setTasks } from '../../App.jsx'; 
 
-const deleteTask = (id) => {
+
+const deleteTask = (id,setTasks) => {
   deleteTaskFromServer(id);
   getTasksFromServer()
     .then((tasks) => {
@@ -11,3 +11,5 @@ const deleteTask = (id) => {
 }
 
 export default deleteTask;
+
+//этот файл больше не нужен по идее

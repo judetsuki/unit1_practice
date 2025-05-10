@@ -18,7 +18,4 @@ const updateTaskOnServer = async (taskId, taskData) => {
     throw error;
   }
 }
-
-updateTaskOnServer(27, { status: true })
-
 export default updateTaskOnServer;
