@@ -56,6 +56,12 @@ function App() {
     getTasksFromServer()
       .then((data) => {
         setTasks(data);
+        // Initialize menuTexts with descriptions from server
+        const descriptions = {};
+        data.forEach(task => {
+          descriptions[task.id] = task.description || '';
+        });
+        setMenuTexts(descriptions);
       })
       .catch((error) => {
         console.error('Error fetching tasks:', error);
@@ -74,6 +80,12 @@ function App() {
       })
       .then((data) => {
         setTasks(data);
+        // Update menuTexts with new descriptions
+        const descriptions = {};
+        data.forEach(task => {
+          descriptions[task.id] = task.description || '';
+        });
+        setMenuTexts(descriptions);
       })
       .catch((error) => {
         console.error('Error adding task:', error);
@@ -84,6 +96,11 @@ function App() {
     deleteTaskFromServer(id)
       .then(() => {
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+        setMenuTexts((prev) => {
+          const newTexts = { ...prev };
+          delete newTexts[id];
+          return newTexts;
+        });
       })
       .catch((error) => {
         console.error('Error deleting task:', error);
@@ -93,12 +110,6 @@ function App() {
       const newFlags = { ...prev };
       delete newFlags[id];
       return newFlags;
-    });
-
-    setMenuTexts((prev) => {
-      const newTexts = { ...prev };
-      delete newTexts[id];
-      return newTexts;
     });
 
     if (openMenuTaskId === id) {
@@ -146,6 +157,12 @@ function App() {
         })
         .then((data) => {
           setTasks(data);
+          // Update menuTexts with new descriptions
+          const descriptions = {};
+          data.forEach(task => {
+            descriptions[task.id] = task.description || '';
+          });
+          setMenuTexts(descriptions);
         })
         .catch((error) => {
           console.error('Error updating task:', error);
