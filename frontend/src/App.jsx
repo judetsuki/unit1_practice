@@ -52,47 +52,55 @@ function App() {
   const containerRef = useRef(null);
   const taskRefs = useRef({});
 
-const addTask = (e, setTasks) => {
+  useEffect(() => {
+    getTasksFromServer()
+      .then((data) => {
+        setTasks(data);
+      })
+      .catch((error) => {
+        console.error('Error fetching tasks:', error);
+      });
+  }, []);
+
+  const addTask = (e) => {
     e.preventDefault();
     const formData = {
-        title: taskTitle,
-        description: taskDescription,
+      title: taskTitle,
+      description: taskDescription,
     };
     postTasksToServer(formData)
-    .then((response) => {
-      console.log(response);
-    })
-    .then(() => {
-      getTasksFromServer()
-      .then((data) => {
-        setTasks(data)
-              console.log(data);
-
-
-      }).catch((error) => {
-        throw new Error(error);
+      .then(() => {
+        return getTasksFromServer();
       })
-    })
-    .catch((error) => {
-      throw new Error(error);
-    })
-};
-    
+      .then((data) => {
+        setTasks(data);
+      })
+      .catch((error) => {
+        console.error('Error adding task:', error);
+      });
+  };
+
   const deleteTask = (id) => {
-      deleteTaskFromServer(id);
-      getTasksFromServer()
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+    deleteTaskFromServer(id)
+      .then(() => {
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+      })
+      .catch((error) => {
+        console.error('Error deleting task:', error);
+      });
+
     setFlagStates((prev) => {
       const newFlags = { ...prev };
       delete newFlags[id];
       return newFlags;
     });
-    
+
     setMenuTexts((prev) => {
       const newTexts = { ...prev };
       delete newTexts[id];
       return newTexts;
     });
+
     if (openMenuTaskId === id) {
       setOpenMenuTaskId(null);
       setTempMenuText('');
@@ -124,7 +132,7 @@ const addTask = (e, setTasks) => {
     }
   };
 
-  const handleSave = (id,task) => {
+  const handleSave = (id, task) => {
     if (openMenuTaskId !== null) {
       setMenuTexts((prev) => ({
         ...prev,
@@ -132,7 +140,16 @@ const addTask = (e, setTasks) => {
       }));
       setOpenMenuTaskId(null);
       setTempMenuText('');
-      updateTaskOnServer(id, task);
+      updateTaskOnServer(id, task)
+        .then(() => {
+          return getTasksFromServer();
+        })
+        .then((data) => {
+          setTasks(data);
+        })
+        .catch((error) => {
+          console.error('Error updating task:', error);
+        });
     }
   };
 
@@ -144,7 +161,7 @@ const addTask = (e, setTasks) => {
   return (
     <div className='container' ref={containerRef}>
       <h1 className='heading'>Task Tracker</h1>
-      <form onSubmit={(e) => addTask(e, setTasks)} className='form'>
+      <form onSubmit={addTask} className='form'>
         <input
           type='text'
           placeholder='Add new task'
@@ -170,11 +187,11 @@ const addTask = (e, setTasks) => {
                 onChange={(e) => setEditingTaskTitle(e.target.value)}
                 onBlur={() => {
                   if (editingTaskTitle.trim() === '') {
-                    setEditingTaskTitle(task.text);
+                    setEditingTaskTitle(task.title);
                   } else {
                     setTasks((prevTasks) =>
                       prevTasks.map((t) =>
-                        t.id === task.id ? { ...t, text: editingTaskTitle } : t
+                        t.id === task.id ? { ...t, title: editingTaskTitle } : t
                       )
                     );
                   }
@@ -185,7 +202,7 @@ const addTask = (e, setTasks) => {
                     e.target.blur();
                   }
                   if (e.key === 'Escape') {
-                    setEditingTaskTitle(task.text);
+                    setEditingTaskTitle(task.title);
                     setEditingTaskId(null);
                   }
                 }}
@@ -194,37 +211,35 @@ const addTask = (e, setTasks) => {
               />
             ) : (
               <span onClick={() => toggleComplete(task.id)} className='task-text'>
-                {task.text}
+                {task.title}
               </span>
             )}
-            {!task.status && (
-              <>
-                <img
-                  src='/assets/edit.png'
-                  alt='Edit Task Title'
-                  className='edit-icon'
-                  title='Edit Task Title'
-                  onClick={() => {
-                    setEditingTaskId(task.id);
-                    setEditingTaskTitle(task.text);
-                  }}
-                />
-                <img
-                  src='/assets/paperstack.png'
-                  alt='Notes'
-                  className='paperstack-icon'
-                  title='Edit'
-                  onClick={() => toggleMenu(task.id)}
-                />
-                <img
-                  src='/assets/flag.png'
-                  alt='Priority'
-                  className={`priority-flag ${flagStates[task.id] ? 'flag-opacity-on' : 'flag-opacity-off'}`}
-                  title='Priority Task'
-                  onClick={() => toggleFlagOpacity(task.id)}
-                />
-              </>
-            )}
+            <>
+              <img
+                src='/assets/edit.png'
+                alt='Edit Task Title'
+                className='edit-icon'
+                title='Edit Task Title'
+                onClick={() => {
+                  setEditingTaskId(task.id);
+                  setEditingTaskTitle(task.title);
+                }}
+              />
+              <img
+                src='/assets/paperstack.png'
+                alt='Notes'
+                className='paperstack-icon'
+                title='Edit'
+                onClick={() => toggleMenu(task.id)}
+              />
+              <img
+                src='/assets/flag.png'
+                alt='Priority'
+                className={`priority-flag ${flagStates[task.id] ? 'flag-opacity-on' : 'flag-opacity-off'}`}
+                title='Priority Task'
+                onClick={() => toggleFlagOpacity(task.id)}
+              />
+            </>
             <button
               onClick={() => {
                 if (window.confirm('Are you sure you want to delete this task?')) {
@@ -248,11 +263,11 @@ const addTask = (e, setTasks) => {
           }}
         >
           <TaskMenu
-            value={taskDescription}
-            onChange={setTaskDescription}
+            value={tempMenuText}
+            onChange={setTempMenuText}
             placeholder='Write notes here...'
           />
-          <button onClick={handleSave} className='task-menu-save-button'>Save</button>
+          <button onClick={() => handleSave(openMenuTaskId, { description: tempMenuText })} className='task-menu-save-button'>Save</button>
           <button onClick={handleClose} className='task-menu-close-button'>Close</button>
         </div>
       )}
