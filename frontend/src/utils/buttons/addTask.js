@@ -2,9 +2,7 @@ import postTasksToServer from "../postTasksToServer.js";
 import getTasksFromServer from "../getTasksFromServer.js";
 import { v4 as uuidv4 } from 'uuid';
 
-/**
- * Refactored addTask to accept setTasks as a parameter.
- */
+
 const addTask = (e, setTasks) => {
     e.preventDefault();
     const form = e.target;

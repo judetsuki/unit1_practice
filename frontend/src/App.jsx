@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './pageStyles.css';
 import './buttonStyles.css';
-import addTask from './utils/buttons/addTask';
+import postTasksToServer from "/home/jude/Documents/college/unit1_practice/frontend/src/utils/postTasksToServer.js";
+import getTasksFromServer from "/home/jude/Documents/college/unit1_practice/frontend/src/utils/getTasksFromServer.js";
+import { v4 as uuidv4 } from 'uuid';
 
 
 const TaskMenu = React.memo(function TaskMenu({ value, onChange, placeholder }) {
@@ -50,17 +52,20 @@ function App() {
   const containerRef = useRef(null);
   const taskRefs = useRef({});
 
-  // const addTask = (e) => {
-  //   e.preventDefault();
-  //   if (!taskTitle.trim()) return;
-  //   const newTask = {
-  //     id: uuidv4(),
-  //     text: taskTitle,
-  //     completed: false,
-  //   };
-  //   setTasks((prevTasks) => [...prevTasks, newTask]);
-  //   setTaskTitle('');
-  // };
+const addTask = (e, setTasks) => {
+    e.preventDefault();
+    const newTask = {
+        title: taskTitle,
+        description: taskDescription,
+        status: false,
+        id: uuidv4(),
+    };
+    setTasks((prevTasks) => [...prevTasks, newTask]);
+    setTaskTitle('');
+  }
+    
+
+
 
   const deleteTask = (id) => {
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
@@ -83,7 +88,7 @@ function App() {
   const toggleComplete = (id) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+        task.id === id ? { ...task, status: !task.status } : task
       )
     );
   };
@@ -140,7 +145,7 @@ function App() {
         {tasks.map((task) => (
           <li
             key={task.id}
-            className={`list-item${task.completed ? ' completed' : ''}`}
+            className={`list-item${task.status ? ' status' : ''}`}
             ref={(el) => (taskRefs.current[task.id] = el)}
           >
             {editingTaskId === task.id ? (
@@ -177,7 +182,7 @@ function App() {
                 {task.text}
               </span>
             )}
-            {!task.completed && (
+            {!task.status && (
               <>
                 <img
                   src='/assets/edit.png'
@@ -239,5 +244,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
