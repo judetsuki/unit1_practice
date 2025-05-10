@@ -21,7 +21,7 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    status = db.Column(db.String(20), default='pending')
+    status = db.Column(db.Boolean(20), default=False)
     due_date = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
@@ -49,7 +49,7 @@ def create_task():
     task = Task(
         title=data['title'],
         description=data.get('description'),
-        status=data.get('status', 'pending'),
+        status=data.get('status', False),
         due_date=datetime.fromisoformat(data['due_date']) if data.get('due_date') else None
     )
     
