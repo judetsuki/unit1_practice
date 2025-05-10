@@ -2,8 +2,8 @@ import { setTasks } from "../imports";
 import updateTaskOnServer from "../updateTaskOnServer";
 import getTasksFromServer from "../getTasksFromServer";
 
-const toggleComplete = (id) => {
-    updateTaskOnServer(id, { completed: !tasks[id].completed });
+const toggleComplete = (id, val) => {
+    updateTaskOnServer(id, { status: val });
     getTasksFromServer().then((tasks) => setTasks(tasks));
 }
 
