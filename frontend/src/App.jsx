@@ -214,8 +214,8 @@ function App() {
       {openMenuTaskId !== null && (
         <div className='task-menu' style={menuStyle}>
           <TaskMenu
-            value={tempMenuText}
-            onChange={setTempMenuText}
+            value={taskDescription}
+            onChange={setTaskDescription}
             placeholder='Write notes here...'
           />
           <button onClick={handleSave} className='task-menu-save-button'>Save</button>
