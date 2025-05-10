@@ -54,15 +54,29 @@ function App() {
 
 const addTask = (e, setTasks) => {
     e.preventDefault();
-    const newTask = {
+    const formData = {
         title: taskTitle,
         description: taskDescription,
         status: false,
         id: uuidv4(),
     };
-    setTasks((prevTasks) => [...prevTasks, newTask]);
-    setTaskTitle('');
-  }
+
+    postTasksToServer(formData)
+    .then((response) => {
+      console.log(response);
+    })
+    .then(() => {
+      getTasksFromServer()
+      .then((response) => {
+        setTasks(response)
+      }).catch((error) => {
+        throw new Error(error);
+      })
+    })
+    .catch((error) => {
+      throw new Error(error);
+    })
+};
     
 
 
