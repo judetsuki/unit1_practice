@@ -56,7 +56,6 @@ function App() {
     getTasksFromServer()
       .then((data) => {
         setTasks(data);
-        // Initialize menuTexts with descriptions from server
         const descriptions = {};
         data.forEach(task => {
           descriptions[task.id] = task.description || '';
@@ -80,7 +79,6 @@ function App() {
       })
       .then((data) => {
         setTasks(data);
-        // Update menuTexts with new descriptions
         const descriptions = {};
         data.forEach(task => {
           descriptions[task.id] = task.description || '';
@@ -157,7 +155,6 @@ function App() {
         })
         .then((data) => {
           setTasks(data);
-          // Update menuTexts with new descriptions
           const descriptions = {};
           data.forEach(task => {
             descriptions[task.id] = task.description || '';
@@ -173,6 +170,27 @@ function App() {
   const handleClose = () => {
     setOpenMenuTaskId(null);
     setTempMenuText('');
+  };
+
+  const handleTitleBlur = (task) => {
+    if (editingTaskTitle.trim() === '') {
+      setEditingTaskTitle(task.title);
+      setEditingTaskId(null);
+      return;
+    }
+    if (editingTaskTitle !== task.title) {
+      updateTaskOnServer(task.id, { title: editingTaskTitle })
+        .then(() => getTasksFromServer())
+        .then((data) => {
+          setTasks(data);
+          setEditingTaskId(null);
+        })
+        .catch((error) => {
+          console.error('Error updating task title:', error);
+        });
+    } else {
+      setEditingTaskId(null);
+    }
   };
 
   return (
@@ -202,18 +220,7 @@ function App() {
                 type='text'
                 value={editingTaskTitle}
                 onChange={(e) => setEditingTaskTitle(e.target.value)}
-                onBlur={() => {
-                  if (editingTaskTitle.trim() === '') {
-                    setEditingTaskTitle(task.title);
-                  } else {
-                    setTasks((prevTasks) =>
-                      prevTasks.map((t) =>
-                        t.id === task.id ? { ...t, title: editingTaskTitle } : t
-                      )
-                    );
-                  }
-                  setEditingTaskId(null);
-                }}
+                onBlur={() => handleTitleBlur(task)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.target.blur();
