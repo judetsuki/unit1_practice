@@ -180,7 +180,7 @@ function App() {
             {!task.completed && (
               <>
                 <img
-                  src='/paperstack.png'
+                  src='/assets/paperstack.png'
                   alt='Notes'
                   className='paperstack-icon'
                   title='Edit'
@@ -188,7 +188,7 @@ function App() {
                   style={{ cursor: 'pointer', marginLeft: '8px' }}
                 />
                 <img
-                  src='/flag.png'
+                  src='/assets/flag.png'
                   alt='Priority'
                   className='priority-flag'
                   title='Priority Task'
