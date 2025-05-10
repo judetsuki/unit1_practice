@@ -1,6 +1,6 @@
 import deleteTaskFromServer from '../deleteTaskFromServer.js';
 import getTasksFromServer from '../getTasksFromServer.js';
-import { setTasks } from '../imports.js'; 
+import { setTasks } from '../../App.jsx'; 
 
 const deleteTask = (id) => {
   deleteTaskFromServer(id);

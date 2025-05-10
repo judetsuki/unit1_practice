@@ -5,6 +5,7 @@ import './buttonStyles.css';
 import postTasksToServer from "../src/utils/postTasksToServer";
 import getTasksFromServer from "../src/utils/getTasksFromServer";
 import { v4 as uuidv4 } from 'uuid';
+// import deleteTask from './utils/buttons/deleteTask';
 
 const TaskMenu = React.memo(function TaskMenu({ value, onChange, placeholder }) {
   const textareaRef = useRef(null);
@@ -56,18 +57,18 @@ const addTask = (e, setTasks) => {
     const formData = {
         title: taskTitle,
         description: taskDescription,
-        status: false,
-        id: uuidv4(),
     };
-  console.log(tasks)
     postTasksToServer(formData)
     .then((response) => {
       console.log(response);
     })
     .then(() => {
       getTasksFromServer()
-      .then((response) => {
-        setTasks(response)
+      .then((data) => {
+        setTasks(data)
+              console.log(data);
+
+
       }).catch((error) => {
         throw new Error(error);
       })
@@ -77,6 +78,17 @@ const addTask = (e, setTasks) => {
     })
 };
     
+  // const addTask = (e) => {
+  //   e.preventDefault();
+  //   if (!taskTitle.trim()) return;
+  //   const newTask = {
+  //     id: uuidv4(),
+  //     text: taskTitle,
+  //     completed: false,
+  //   };
+  //   setTasks((prevTasks) => [...prevTasks, newTask]);
+  //   setTaskTitle('');
+  // };
 
 
 
@@ -87,6 +99,7 @@ const addTask = (e, setTasks) => {
       delete newFlags[id];
       return newFlags;
     });
+    
     setMenuTexts((prev) => {
       const newTexts = { ...prev };
       delete newTexts[id];
