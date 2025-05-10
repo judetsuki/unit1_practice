@@ -41,7 +41,7 @@ TaskMenu.propTypes = {
 function App() {
   const [tasks, setTasks] = useState([]);
   const [taskTitle, setTaskTitle] = useState('');
-  const [taskDescription, setTaskDescription] = useState('');
+  const [taskDescription] = useState('');
   const [flagStates, setFlagStates] = useState({});
   const [openMenuTaskId, setOpenMenuTaskId] = useState(null);
   const [menuTexts, setMenuTexts] = useState({});
