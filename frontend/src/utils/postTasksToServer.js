@@ -27,6 +27,4 @@ const postTasksToServer = async (task) => {
   }
 }
 
-postTasksToServer({title: 'test', description: 'test'})
-
 export default postTasksToServer;
