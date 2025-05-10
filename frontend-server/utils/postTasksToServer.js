@@ -17,13 +17,13 @@ const postTasksToServer = async (task) => {
     fs.writeFileSync('./debug.html', error.data);
     return 0;
   }
-} else {
-  throw new Error(checkIfTaskValid(task).error)
-}
+  } else {
+    throw new Error(checkIfTaskValid(task).error)
+  }
 }
 
 const taksa = {
-  title: 'LUKA EBLAN!!!',
+  title: 'LUKA GEROI!!!',
   description: 'test',
   status: 'test',
   due_date: '2025-05-10T15:00:00',
