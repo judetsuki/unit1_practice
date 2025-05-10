@@ -51,6 +51,7 @@ function App() {
 
   const containerRef = useRef(null);
   const taskRefs = useRef({});
+  const taskTitleInputRef = useRef(null);
 
   useEffect(() => {
     getTasksFromServer()
@@ -84,6 +85,10 @@ function App() {
           descriptions[task.id] = task.description || '';
         });
         setMenuTexts(descriptions);
+        setTaskTitle('');
+        if (taskTitleInputRef.current) {
+          taskTitleInputRef.current.focus();
+        }
       })
       .catch((error) => {
         console.error('Error adding task:', error);
@@ -198,6 +203,7 @@ function App() {
       <h1 className='heading'>Task Tracker</h1>
       <form onSubmit={addTask} className='form'>
         <input
+          ref={taskTitleInputRef}
           type='text'
           placeholder='Add new task'
           value={taskTitle}
