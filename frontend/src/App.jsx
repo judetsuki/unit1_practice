@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './pageStyles.css';
 import './buttonStyles.css';
-import postTasksToServer from "frontend/src/utils/postTasksToServer.js";
-import getTasksFromServer from "frontend/src/utils/getTasksFromServer.js";
+import postTasksToServer from "../src/utils/postTasksToServer";
+import getTasksFromServer from "../src/utils/getTasksFromServer";
 import { v4 as uuidv4 } from 'uuid';
 
 const TaskMenu = React.memo(function TaskMenu({ value, onChange, placeholder }) {
