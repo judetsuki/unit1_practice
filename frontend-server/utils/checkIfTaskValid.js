@@ -5,7 +5,7 @@ const checkIfTaskValid = (task) => {
   if (!task.description) {
     return { error: 'Description is required' };
   }
-  return 1;
+  return true;
 }
 
 export default checkIfTaskValid
