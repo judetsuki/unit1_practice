@@ -25,7 +25,6 @@ const TaskMenu = React.memo(function TaskMenu({ value, onChange, placeholder }) 
       onChange={(e) => onChange(e.target.value)}
       className='task-menu-textarea'
       placeholder={placeholder}
-      style={{ overflow: 'hidden', direction: 'ltr', textAlign: 'left' }}
     />
   );
 });
@@ -121,38 +120,8 @@ function App() {
     setTempMenuText('');
   };
 
-  const [menuStyle, setMenuStyle] = useState({});
-
-  useEffect(() => {
-    if (openMenuTaskId !== null && taskRefs.current[openMenuTaskId] && containerRef.current) {
-      const taskEl = taskRefs.current[openMenuTaskId];
-      const containerEl = containerRef.current;
-
-      const containerRect = containerEl.getBoundingClientRect();
-      const taskRect = taskEl.getBoundingClientRect();
-
-      const top = taskRect.bottom - containerRect.top + 5;
-      const left = 0;
-      const width = containerEl.clientWidth;
-
-      setMenuStyle({
-        position: 'absolute',
-        top: `${top}px`,
-        left: `${left}px`,
-        width: `${width}px`,
-        zIndex: 1000,
-        backgroundColor: 'white',
-        border: '1px solid #ccc',
-        padding: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-      });
-    } else {
-      setMenuStyle({});
-    }
-  }, [openMenuTaskId, tasks]);
-
   return (
-    <div className='container' style={{ position: 'relative' }} ref={containerRef}>
+    <div className='container' ref={containerRef}>
       <h1 className='heading'>Task Tracker</h1>
       <form onSubmit={addTask} className='form'>
         <input
@@ -165,94 +134,98 @@ function App() {
         <button type='submit' className='button'>Add</button>
       </form>
 
-        <ul className='list'>
-          {tasks.length === 0 && <li className='no-tasks'>No tasks yet</li>}
-          {tasks.map((task) => (
-            <li
-              key={task.id}
-              className={`list-item${task.completed ? ' completed' : ''}`}
-              ref={(el) => (taskRefs.current[task.id] = el)}
-            >
-              {editingTaskId === task.id ? (
-                <input
-                  type='text'
-                  value={editingTaskTitle}
-                  onChange={(e) => setEditingTaskTitle(e.target.value)}
-                  onBlur={() => {
-                    if (editingTaskTitle.trim() === '') {
-                      setEditingTaskTitle(task.text);
-                    } else {
-                      setTasks((prevTasks) =>
-                        prevTasks.map((t) =>
-                          t.id === task.id ? { ...t, text: editingTaskTitle } : t
-                        )
-                      );
-                    }
+      <ul className='list'>
+        {tasks.length === 0 && <li className='no-tasks'>No tasks yet</li>}
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            className={`list-item${task.completed ? ' completed' : ''}`}
+            ref={(el) => (taskRefs.current[task.id] = el)}
+          >
+            {editingTaskId === task.id ? (
+              <input
+                type='text'
+                value={editingTaskTitle}
+                onChange={(e) => setEditingTaskTitle(e.target.value)}
+                onBlur={() => {
+                  if (editingTaskTitle.trim() === '') {
+                    setEditingTaskTitle(task.text);
+                  } else {
+                    setTasks((prevTasks) =>
+                      prevTasks.map((t) =>
+                        t.id === task.id ? { ...t, text: editingTaskTitle } : t
+                      )
+                    );
+                  }
+                  setEditingTaskId(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.target.blur();
+                  }
+                  if (e.key === 'Escape') {
+                    setEditingTaskTitle(task.text);
                     setEditingTaskId(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.target.blur();
-                    }
-                    if (e.key === 'Escape') {
-                      setEditingTaskTitle(task.text);
-                      setEditingTaskId(null);
-                    }
-                  }}
-                  autoFocus
-                  className='task-edit-input'
-                />
-              ) : (
-                <span onClick={() => toggleComplete(task.id)} className='task-text'>
-                  {task.text}
-                </span>
-              )}
-              {!task.completed && (
-                <>
-                  <img
-                    src='/assets/edit.png'
-                    alt='Edit Task Title'
-                    className='edit-icon'
-                    title='Edit Task Title'
-                    onClick={() => {
-                      setEditingTaskId(task.id);
-                      setEditingTaskTitle(task.text);
-                    }}
-                  />
-                  <img
-                    src='/assets/paperstack.png'
-                    alt='Notes'
-                    className='paperstack-icon'
-                    title='Edit'
-                    onClick={() => toggleMenu(task.id)}
-                  />
-                  <img
-                    src='/assets/flag.png'
-                    alt='Priority'
-                    className='priority-flag'
-                    title='Priority Task'
-                    style={{
-                      opacity: flagStates[task.id] ? 1 : 0.5,
-                    }}
-                    onClick={() => toggleFlagOpacity(task.id)}
-                  />
-                </>
-              )}
-              <button
-                onClick={() => {
-                  if (window.confirm('Are you sure you want to delete this task?')) {
-                    deleteTask(task.id);
                   }
                 }}
-                className='delete-button'
-              >
-                &times;
-              </button>
-            </li>
-          ))}
-        </ul>
+                autoFocus
+                className='task-edit-input'
+              />
+            ) : (
+              <span onClick={() => toggleComplete(task.id)} className='task-text'>
+                {task.text}
+              </span>
+            )}
+            {!task.completed && (
+              <>
+                <img
+                  src='/assets/edit.png'
+                  alt='Edit Task Title'
+                  className='edit-icon'
+                  title='Edit Task Title'
+                  onClick={() => {
+                    setEditingTaskId(task.id);
+                    setEditingTaskTitle(task.text);
+                  }}
+                />
+                <img
+                  src='/assets/paperstack.png'
+                  alt='Notes'
+                  className='paperstack-icon'
+                  title='Edit'
+                  onClick={() => toggleMenu(task.id)}
+                />
+                <img
+                  src='/assets/flag.png'
+                  alt='Priority'
+                  className={`priority-flag ${flagStates[task.id] ? 'flag-opacity-on' : 'flag-opacity-off'}`}
+                  title='Priority Task'
+                  onClick={() => toggleFlagOpacity(task.id)}
+                />
+              </>
+            )}
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this task?')) {
+                  deleteTask(task.id);
+                }
+              }}
+              className='delete-button'
+            >
+              &times;
+            </button>
+          </li>
+        ))}
+      </ul>
       {openMenuTaskId !== null && (
-        <div className='task-menu' style={menuStyle}>
+        <div
+          className='task-menu task-menu-open'
+          style={{
+            top: `${taskRefs.current[openMenuTaskId].getBoundingClientRect().bottom - containerRef.current.getBoundingClientRect().top + 5}px`,
+            left: 0,
+            width: `${containerRef.current.clientWidth}px`,
+          }}
+        >
           <TaskMenu
             value={taskDescription}
             onChange={setTaskDescription}

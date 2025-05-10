@@ -7,6 +7,7 @@
   margin-top: 2.5rem; /* mt-10 */
   font-family: sans-serif;
   text-align: center;
+  position: relative;
 }
 
 .heading {
@@ -80,6 +81,15 @@
   text-align: left;
 }
 
+.task-menu-open {
+  position: absolute;
+  z-index: 1000;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
 .task-menu-textarea {
   width: 100%;
   min-height: 80px;
@@ -89,5 +99,15 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+  overflow: hidden;
+  direction: ltr;
+  text-align: left;
 }
 
+.flag-opacity-on {
+  opacity: 1;
+}
+
+.flag-opacity-off {
+  opacity: 0.5;
+}
