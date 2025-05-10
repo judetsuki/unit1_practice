@@ -2,7 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import './pageStyles.css';
 import './buttonStyles.css';
 
-const TaskMenu = React.memo(function TaskMenu({ value, onChange }) {
+const TaskMenu = React.memo(function TaskMenu({
+  value,
+  onChange,
+  placeholder,
+}) {
   const textareaRef = useRef(null);
 
   useEffect(() => {
@@ -22,7 +26,7 @@ const TaskMenu = React.memo(function TaskMenu({ value, onChange }) {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className='task-menu-textarea'
-      placeholder='Write notes here...'
+      placeholder='{placeholder}'
       style={{ overflow: 'hidden', direction: 'ltr', textAlign: 'left' }}
     />
   );
@@ -30,25 +34,26 @@ const TaskMenu = React.memo(function TaskMenu({ value, onChange }) {
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [taskText, setTaskText] = useState('');
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
   const [flagStates, setFlagStates] = useState({});
   const [openMenuTaskId, setOpenMenuTaskId] = useState(null);
-  const [menuTexts, setMenuTexts] = useState({}); 
-  const [tempMenuText, setTempMenuText] = useState(''); 
+  const [menuTexts, setMenuTexts] = useState({});
+  const [tempMenuText, setTempMenuText] = useState('');
 
   const containerRef = useRef(null);
-  const taskRefs = useRef({}); 
+  const taskRefs = useRef({});
 
   const addTask = (e) => {
     e.preventDefault();
-    if (!taskText.trim()) return;
+    if (!taskTitle.trim()) return;
     const newTask = {
       id: Date.now(),
-      text: taskText,
+      text: taskTitle,
       completed: false,
     };
     setTasks([...tasks, newTask]);
-    setTaskText('');
+    setTaskTitle('');
   };
 
   const deleteTask = (id) => {
@@ -86,18 +91,12 @@ function App() {
 
   const toggleMenu = (id) => {
     if (openMenuTaskId === id) {
-
       setOpenMenuTaskId(null);
       setTempMenuText('');
     } else {
-
       setOpenMenuTaskId(id);
       setTempMenuText(menuTexts[id] || '');
     }
-  };
-
-  const handleTempMenuTextChange = (value) => {
-    setTempMenuText(value);
   };
 
   const handleSave = () => {
@@ -115,7 +114,6 @@ function App() {
     setOpenMenuTaskId(null);
     setTempMenuText('');
   };
-
 
   const [menuStyle, setMenuStyle] = useState({});
 
@@ -152,20 +150,25 @@ function App() {
   }, [openMenuTaskId, tasks]);
 
   return (
-    <div className='container' style={{ position: 'relative' }} ref={containerRef}>
+    <div
+      className='container'
+      style={{ position: 'relative' }}
+      ref={containerRef}
+    >
       <h1 className='heading'>Task Tracker</h1>
       <form onSubmit={addTask} className='form'>
         <input
           type='text'
-          placeholder='Add new task'
-          value={taskText}
-          onChange={(e) => setTaskText(e.target.value)}
+          placeholder='Task Title'
+          value={taskTitle}
+          onChange={(e) => setTaskTitle(e.target.value)}
           className='input'
         />
         <button type='submit' className='button'>
           Add
         </button>
       </form>
+
       <ul className='list'>
         {tasks.length === 0 && <li className='no-tasks'>No tasks yet</li>}
         {tasks.map((task) => (
@@ -203,7 +206,9 @@ function App() {
             )}
             <button
               onClick={() => {
-                if (window.confirm('Are you sure you want to delete this task?')) {
+                if (
+                  window.confirm('Are you sure you want to delete this task?')
+                ) {
                   deleteTask(task.id);
                 }
               }}
@@ -216,7 +221,11 @@ function App() {
       </ul>
       {openMenuTaskId !== null && (
         <div className='task-menu' style={menuStyle}>
-          <TaskMenu value={tempMenuText} onChange={handleTempMenuTextChange} />
+          <TaskMenu
+            value={taskDescription}
+            onChange={setTaskDescription}
+            placeholder='Write notes here...'
+          />
           <button onClick={handleSave} className='task-menu-save-button'>
             Save
           </button>
