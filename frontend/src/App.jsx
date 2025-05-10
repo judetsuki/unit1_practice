@@ -1,12 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import './pageStyles.css';
 import './buttonStyles.css';
+import { v4 as uuidv4 } from 'uuid';
 
-const TaskMenu = React.memo(function TaskMenu({
-  value,
-  onChange,
-  placeholder,
-}) {
+const TaskMenu = React.memo(function TaskMenu({ value, onChange, placeholder }) {
   const textareaRef = useRef(null);
 
   useEffect(() => {
@@ -14,7 +12,7 @@ const TaskMenu = React.memo(function TaskMenu({
       const textarea = textareaRef.current;
       const { selectionStart, selectionEnd } = textarea;
       textarea.style.height = 'auto';
-      textarea.style.height = textarea.scrollHeight + 'px';
+      textarea.style.height = `${textarea.scrollHeight}px`;
       textarea.setSelectionRange(selectionStart, selectionEnd);
       textarea.focus();
     }
@@ -26,11 +24,17 @@ const TaskMenu = React.memo(function TaskMenu({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className='task-menu-textarea'
-      placeholder='{placeholder}'
+      placeholder={placeholder}
       style={{ overflow: 'hidden', direction: 'ltr', textAlign: 'left' }}
     />
   );
 });
+
+TaskMenu.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+};
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -48,16 +52,16 @@ function App() {
     e.preventDefault();
     if (!taskTitle.trim()) return;
     const newTask = {
-      id: Date.now(),
+      id: uuidv4(),
       text: taskTitle,
       completed: false,
     };
-    setTasks([...tasks, newTask]);
+    setTasks((prevTasks) => [...prevTasks, newTask]);
     setTaskTitle('');
   };
 
   const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
     setFlagStates((prev) => {
       const newFlags = { ...prev };
       delete newFlags[id];
@@ -75,8 +79,8 @@ function App() {
   };
 
   const toggleComplete = (id) => {
-    setTasks(
-      tasks.map((task) =>
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task
       )
     );
@@ -118,11 +122,7 @@ function App() {
   const [menuStyle, setMenuStyle] = useState({});
 
   useEffect(() => {
-    if (
-      openMenuTaskId !== null &&
-      taskRefs.current[openMenuTaskId] &&
-      containerRef.current
-    ) {
+    if (openMenuTaskId !== null && taskRefs.current[openMenuTaskId] && containerRef.current) {
       const taskEl = taskRefs.current[openMenuTaskId];
       const containerEl = containerRef.current;
 
@@ -135,9 +135,9 @@ function App() {
 
       setMenuStyle({
         position: 'absolute',
-        top: top + 'px',
-        left: left + 'px',
-        width: width + 'px',
+        top: `${top}px`,
+        left: `${left}px`,
+        width: `${width}px`,
         zIndex: 1000,
         backgroundColor: 'white',
         border: '1px solid #ccc',
@@ -150,23 +150,17 @@ function App() {
   }, [openMenuTaskId, tasks]);
 
   return (
-    <div
-      className='container'
-      style={{ position: 'relative' }}
-      ref={containerRef}
-    >
+    <div className='container' style={{ position: 'relative' }} ref={containerRef}>
       <h1 className='heading'>Task Tracker</h1>
       <form onSubmit={addTask} className='form'>
         <input
           type='text'
-          placeholder='Task Title'
+          placeholder='Add new task'
           value={taskTitle}
           onChange={(e) => setTaskTitle(e.target.value)}
           className='input'
         />
-        <button type='submit' className='button'>
-          Add
-        </button>
+        <button type='submit' className='button'>Add</button>
       </form>
 
       <ul className='list'>
@@ -206,9 +200,7 @@ function App() {
             )}
             <button
               onClick={() => {
-                if (
-                  window.confirm('Are you sure you want to delete this task?')
-                ) {
+                if (window.confirm('Are you sure you want to delete this task?')) {
                   deleteTask(task.id);
                 }
               }}
@@ -222,16 +214,12 @@ function App() {
       {openMenuTaskId !== null && (
         <div className='task-menu' style={menuStyle}>
           <TaskMenu
-            value={taskDescription}
-            onChange={setTaskDescription}
+            value={tempMenuText}
+            onChange={setTempMenuText}
             placeholder='Write notes here...'
           />
-          <button onClick={handleSave} className='task-menu-save-button'>
-            Save
-          </button>
-          <button onClick={handleClose} className='task-menu-close-button'>
-            Close
-          </button>
+          <button onClick={handleSave} className='task-menu-save-button'>Save</button>
+          <button onClick={handleClose} className='task-menu-close-button'>Close</button>
         </div>
       )}
     </div>
