@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './pageStyles.css';
 import './buttonStyles.css';
-import { v4 as uuidv4 } from 'uuid';
+import addTask from './utils/buttons/addTask';
+
 
 const TaskMenu = React.memo(function TaskMenu({ value, onChange, placeholder }) {
   const textareaRef = useRef(null);
@@ -49,17 +50,17 @@ function App() {
   const containerRef = useRef(null);
   const taskRefs = useRef({});
 
-  const addTask = (e) => {
-    e.preventDefault();
-    if (!taskTitle.trim()) return;
-    const newTask = {
-      id: uuidv4(),
-      text: taskTitle,
-      completed: false,
-    };
-    setTasks((prevTasks) => [...prevTasks, newTask]);
-    setTaskTitle('');
-  };
+  // const addTask = (e) => {
+  //   e.preventDefault();
+  //   if (!taskTitle.trim()) return;
+  //   const newTask = {
+  //     id: uuidv4(),
+  //     text: taskTitle,
+  //     completed: false,
+  //   };
+  //   setTasks((prevTasks) => [...prevTasks, newTask]);
+  //   setTaskTitle('');
+  // };
 
   const deleteTask = (id) => {
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
@@ -123,7 +124,7 @@ function App() {
   return (
     <div className='container' ref={containerRef}>
       <h1 className='heading'>Task Tracker</h1>
-      <form onSubmit={addTask} className='form'>
+      <form onSubmit={(e) => addTask(e, setTasks)} className='form'>
         <input
           type='text'
           placeholder='Add new task'

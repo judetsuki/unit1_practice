@@ -1,5 +1,5 @@
 install :
-	cd frontend && npm ci
+	cd frontend && npm i
 test:
 	cd frontend && npm test
 start:
