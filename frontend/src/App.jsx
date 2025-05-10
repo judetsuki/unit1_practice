@@ -2,10 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './pageStyles.css';
 import './buttonStyles.css';
-import postTasksToServer from "/home/jude/Documents/college/unit1_practice/frontend/src/utils/postTasksToServer.js";
-import getTasksFromServer from "/home/jude/Documents/college/unit1_practice/frontend/src/utils/getTasksFromServer.js";
+import postTasksToServer from "frontend/src/utils/postTasksToServer.js";
+import getTasksFromServer from "frontend/src/utils/getTasksFromServer.js";
 import { v4 as uuidv4 } from 'uuid';
-
 
 const TaskMenu = React.memo(function TaskMenu({ value, onChange, placeholder }) {
   const textareaRef = useRef(null);
@@ -60,7 +59,7 @@ const addTask = (e, setTasks) => {
         status: false,
         id: uuidv4(),
     };
-
+  console.log(tasks)
     postTasksToServer(formData)
     .then((response) => {
       console.log(response);
@@ -258,4 +257,5 @@ const addTask = (e, setTasks) => {
     </div>
   );
 }
+
 export default App;
