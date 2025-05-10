@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tracker API Test</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .task { border: 1px solid #ddd; margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .task button { margin-left: 10px; }
+        .error { color: red; }
+        .success { color: green; }
+        input, button { margin: 5px; padding: 5px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        function TaskTracker() {
+            const [tasks, setTasks] = React.useState([]);
+            const [status, setStatus] = React.useState('');
+            const [newTask, setNewTask] = React.useState({ title: '', description: '', status: 'pending' });
+            
+            const API_URL = 'https://task-tracker-daniel.loca.lt';
+
+            React.useEffect(() => {
+                fetchTasks();
+            }, []);
+
+            async function fetchTasks() {
+                try {
+                    setStatus('Loading tasks...');
+                    const response = await fetch(`${API_URL}/tasks`);
+                    if (!response.ok) throw new Error('Failed to fetch tasks');
+                    const data = await response.json();
+                    setTasks(data);
+                    setStatus('Tasks loaded successfully');
+                } catch (error) {
+                    setStatus(`Error: ${error.message}`);
+                }
+            }
+
+            async function addTask(e) {
+                e.preventDefault();
+                try {
+                    setStatus('Adding task...');
+                    const response = await fetch(`${API_URL}/tasks`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newTask)
+                    });
+                    if (!response.ok) throw new Error('Failed to add task');
+                    const task = await response.json();
+                    setTasks([...tasks, task]);
+                    setNewTask({ title: '', description: '', status: 'pending' });
+                    setStatus('Task added successfully');
+                } catch (error) {
+                    setStatus(`Error: ${error.message}`);
+                }
+            }
+
+            async function deleteTask(id) {
+                try {
+                    setStatus('Deleting task...');
+                    const response = await fetch(`${API_URL}/tasks/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) throw new Error('Failed to delete task');
+                    setTasks(tasks.filter(task => task.id !== id));
+                    setStatus('Task deleted successfully');
+                } catch (error) {
+                    setStatus(`Error: ${error.message}`);
+                }
+            }
+
+            return (
+                <div>
+                    <h1>Task Tracker (Remote Access Test)</h1>
+                    <div className={status.includes('Error') ? 'error' : 'success'}>
+                        {status}
+                    </div>
+
+                    <form onSubmit={addTask}>
+                        <h3>Add New Task</h3>
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Task Title"
+                                value={newTask.title}
+                                onChange={e => setNewTask({...newTask, title: e.target.value})}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Task Description"
+                                value={newTask.description}
+                                onChange={e => setNewTask({...newTask, description: e.target.value})}
+                            />
+                        </div>
+                        <button type="submit">Add Task</button>
+                    </form>
+
+                    <h3>Tasks ({tasks.length})</h3>
+                    {tasks.map(task => (
+                        <div key={task.id} className="task">
+                            <h4>{task.title}</h4>
+                            <p>{task.description}</p>
+                            <p>Status: {task.status}</p>
+                            <button onClick={() => deleteTask(task.id)}>Delete</button>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // Use modern React 18 createRoot API
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(
+            <React.StrictMode>
+                <TaskTracker />
+            </React.StrictMode>
+        );
+    </script>
+</body>
+</html>

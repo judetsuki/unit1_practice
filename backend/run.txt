@@ -1,1 +1,4 @@
-.\venv_new\Scripts\python -m pytest test_app.py -v
+ cd c:\Users\danie\1\unit1_practice\backend && python app.py
+ npx localtunnel --port 5001 --subdomain task-tracker-daniel
+ cd c:\Users\danie\1\unit1_practice\backend && python -m http.server 3000
+ psql -U danie -d tasktracker -c "SELECT * FROM task;"

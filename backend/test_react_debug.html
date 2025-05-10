@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tracker API Test (Debug)</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .task { border: 1px solid #ddd; margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .task button { margin-left: 10px; }
+        .error { color: red; }
+        .success { color: green; }
+        input, button { margin: 5px; padding: 5px; }
+        .debug { font-family: monospace; background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, StrictMode } = React;
+        const { createRoot } = ReactDOM;
+
+        function TaskTracker() {
+            const [tasks, setTasks] = useState([]);
+            const [status, setStatus] = useState('');
+            const [debugInfo, setDebugInfo] = useState('');
+            const [newTask, setNewTask] = useState({ title: '', description: '', status: 'pending' });
+            
+            const API_URL = 'https://task-tracker-daniel.loca.lt';
+
+            const addDebugInfo = (info) => {
+                setDebugInfo(prev => `${new Date().toISOString()}: ${info}\n${prev}`);
+                console.log(info);
+            };
+
+            useEffect(() => {
+                fetchTasks();
+            }, []);
+
+            async function fetchTasks() {
+                try {
+                    setStatus('Loading tasks...');
+                    addDebugInfo(`Fetching tasks from: ${API_URL}/tasks`);
+                    
+                    const response = await fetch(`${API_URL}/tasks`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        mode: 'cors'
+                    });
+                    
+                    addDebugInfo(`Response status: ${response.status}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    addDebugInfo(`Received ${data.length} tasks`);
+                    setTasks(data);
+                    setStatus('Tasks loaded successfully');
+                } catch (error) {
+                    const errorMsg = `Error: ${error.message}`;
+                    addDebugInfo(errorMsg);
+                    setStatus(errorMsg);
+                    console.error('Fetch error:', error);
+                }
+            }
+
+            async function addTask(e) {
+                e.preventDefault();
+                try {
+                    setStatus('Adding task...');
+                    addDebugInfo(`Adding new task: ${JSON.stringify(newTask)}`);
+                    
+                    const response = await fetch(`${API_URL}/tasks`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        mode: 'cors',
+                        body: JSON.stringify(newTask)
+                    });
+                    
+                    addDebugInfo(`Add task response status: ${response.status}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const task = await response.json();
+                    addDebugInfo(`Task added successfully: ${JSON.stringify(task)}`);
+                    setTasks([...tasks, task]);
+                    setNewTask({ title: '', description: '', status: 'pending' });
+                    setStatus('Task added successfully');
+                } catch (error) {
+                    const errorMsg = `Error: ${error.message}`;
+                    addDebugInfo(errorMsg);
+                    setStatus(errorMsg);
+                    console.error('Add task error:', error);
+                }
+            }
+
+            async function deleteTask(id) {
+                try {
+                    setStatus('Deleting task...');
+                    addDebugInfo(`Deleting task: ${id}`);
+                    
+                    const response = await fetch(`${API_URL}/tasks/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        mode: 'cors'
+                    });
+                    
+                    addDebugInfo(`Delete task response status: ${response.status}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    setTasks(tasks.filter(task => task.id !== id));
+                    setStatus('Task deleted successfully');
+                    addDebugInfo('Task deleted successfully');
+                } catch (error) {
+                    const errorMsg = `Error: ${error.message}`;
+                    addDebugInfo(errorMsg);
+                    setStatus(errorMsg);
+                    console.error('Delete error:', error);
+                }
+            }
+
+            return (
+                <div>
+                    <h1>Task Tracker (Debug Mode)</h1>
+                    <div className={status.includes('Error') ? 'error' : 'success'}>
+                        {status}
+                    </div>
+
+                    <form onSubmit={addTask}>
+                        <h3>Add New Task</h3>
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Task Title"
+                                value={newTask.title}
+                                onChange={e => setNewTask({...newTask, title: e.target.value})}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Task Description"
+                                value={newTask.description}
+                                onChange={e => setNewTask({...newTask, description: e.target.value})}
+                            />
+                        </div>
+                        <button type="submit">Add Task</button>
+                    </form>
+
+                    <h3>Tasks ({tasks.length})</h3>
+                    {tasks.map(task => (
+                        <div key={task.id} className="task">
+                            <h4>{task.title}</h4>
+                            <p>{task.description}</p>
+                            <p>Status: {task.status}</p>
+                            <button onClick={() => deleteTask(task.id)}>Delete</button>
+                        </div>
+                    ))}
+
+                    <h3>Debug Log</h3>
+                    <pre className="debug">{debugInfo}</pre>
+                </div>
+            );
+        }
+
+        // Use modern React 18 createRoot API
+        const root = createRoot(document.getElementById('root'));
+        root.render(
+            <StrictMode>
+                <TaskTracker />
+            </StrictMode>
+        );
+    </script>
+</body>
+</html>
