@@ -32,14 +32,6 @@ describe('Task Tracker App', () => {
   expect(noTasksElement).toBeInTheDocument();
 });
 
-  test('displays no tasks message when there are no tasks', async () => {
-    getApi.default.mockResolvedValueOnce([]); 
-      await act(async () => {
-          render(<App />);
-      });
-    const noTasksElement = await screen.findByText(/No tasks yet/i);
-    expect(noTasksElement).toBeInTheDocument();
-  });
 
   test('adds a new task', async () => {
       await act(async () => {
