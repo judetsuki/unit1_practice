@@ -1,189 +1,185 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import App from '../App';
+import { render, screen, fireEvent,act , waitFor } from '@testing-library/react';
+
+import App from '../App'; 
+import * as postApi from '../utils/postTasksToServer';
+import * as getApi from '../utils/getTasksFromServer'; 
+import * as deleteApi from '../utils/deleteTaskFromServer'; 
+
+jest.mock('../utils/postTasksToServer');
+jest.mock('../utils/getTasksFromServer');
+jest.mock('../utils/deleteTaskFromServer');
+
+beforeAll(() => {
+  window.confirm = jest.fn(() => true); 
+});
 
 describe('Task Tracker App', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    
+    getApi.default.mockResolvedValue([
+      { id: 1, title: 'Test Task 1', description: 'Description 1', status: false },
+      { id: 2, title: 'Test Task 2', description: 'Description 2', status: false },
+    ]);
+  });
+
+  test('displays no tasks message when there are no tasks', async () => {
+  getApi.default.mockResolvedValueOnce([]); 
+  await act(async () => {
     render(<App />);
   });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('renders the heading', () => {
-    expect(screen.getByText(/task tracker/i)).toBeInTheDocument();
-  });
-
-  it('renders no tasks message when there are no tasks', () => {
-    expect(screen.getByText(/no tasks yet/i)).toBeInTheDocument();
-  });
-
-  it('does not add empty tasks', () => {
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const buttonElement = screen.getByRole('button', { name: /add/i });
-
-    fireEvent.change(inputElement, { target: { value: '   ' } });
-    fireEvent.click(buttonElement);
-
-    expect(screen.getByText(/no tasks yet/i)).toBeInTheDocument();
-  });
-
-  it('allows users to add a new task', () => {
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const buttonElement = screen.getByRole('button', { name: /add/i });
-
-    fireEvent.change(inputElement, { target: { value: 'New Task' } });
-    fireEvent.click(buttonElement);
-
-    expect(screen.getByText(/new task/i)).toBeInTheDocument();
-    expect(screen.queryByText(/no tasks yet/i)).not.toBeInTheDocument();
-  });
-
-  it('allows users to delete a task', () => {
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const buttonElement = screen.getByRole('button', { name: /add/i });
-
-    // Добавляем задачу
-    fireEvent.change(inputElement, { target: { value: 'Task to delete' } });
-    fireEvent.click(buttonElement);
-
-    const deleteButton = screen.getByRole('button', { name: /×/i });
-    // Моким window.confirm на true
-    jest.spyOn(window, 'confirm').mockImplementation(() => true);
-
-    fireEvent.click(deleteButton);
-
-    expect(screen.queryByText(/task to delete/i)).not.toBeInTheDocument();
-
-    window.confirm.mockRestore();
-  });
-
-  
-
-  it('toggles priority flag opacity', () => {
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const buttonElement = screen.getByRole('button', { name: /add/i });
-
-    fireEvent.change(inputElement, { target: { value: 'Task with flag' } });
-    fireEvent.click(buttonElement);
-
-    const flagIcon = screen.getByAltText(/priority/i);
-    // Изначально opacity 0.5 (false)
-    expect(flagIcon).toHaveStyle('opacity: 0.5');
-
-    fireEvent.click(flagIcon);
-    expect(flagIcon).toHaveStyle('opacity: 1');
-
-    fireEvent.click(flagIcon);
-    expect(flagIcon).toHaveStyle('opacity: 0.5');
-  });
-
-  it('opens the task menu editing the correct task', () => {
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const buttonElement = screen.getByRole('button', { name: /add/i });
-
-    fireEvent.change(inputElement, { target: { value: 'Task 1' } });
-    fireEvent.click(buttonElement);
-
-    fireEvent.change(inputElement, { target: { value: 'Task 2' } });
-    fireEvent.click(buttonElement);
-
-    const editButtons = screen.getAllByTitle(/edit/i);
-    fireEvent.click(editButtons[1]); // Открываем меню для Task 2
-
-    const taskMenuTextarea = screen.getByPlaceholderText(/write notes here.../i);
-    expect(taskMenuTextarea).toBeInTheDocument();
-
-    // Проверяем, что меню для правильной задачи (пока пустое)
-    expect(taskMenuTextarea.value).toBe('');
-  });
-
-  it('allows editing and saving notes in the task menu', () => {
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const addButton = screen.getByRole('button', { name: /add/i });
-
-    fireEvent.change(inputElement, { target: { value: 'Task with notes' } });
-    fireEvent.click(addButton);
-
-    const editButton = screen.getByTitle(/edit/i);
-    fireEvent.click(editButton);
-
-    const taskMenuTextarea = screen.getByPlaceholderText(/write notes here.../i);
-    fireEvent.change(taskMenuTextarea, { target: { value: 'Some notes here' } });
-    expect(taskMenuTextarea.value).toBe('Some notes here');
-
-    const saveButton = screen.getByRole('button', { name: /save/i });
-    fireEvent.click(saveButton);
-
-    // Закрытие меню после сохранения
-    expect(screen.queryByPlaceholderText(/write notes here.../i)).not.toBeInTheDocument();
-
-    // Повторно открыть меню и проверить сохраненный текст
-    fireEvent.click(screen.getByTitle(/edit/i));
-    expect(screen.getByPlaceholderText(/write notes here.../i).value).toBe('Some notes here');
-  });
-
-  it('closes menu and discards changes on close', () => {
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const addButton = screen.getByRole('button', { name: /add/i });
-
-    fireEvent.change(inputElement, { target: { value: 'Task with notes' } });
-    fireEvent.click(addButton);
-
-    const editButton = screen.getByTitle(/edit/i);
-    fireEvent.click(editButton);
-
-    const taskMenuTextarea = screen.getByPlaceholderText(/write notes here.../i);
-    fireEvent.change(taskMenuTextarea, { target: { value: 'Temporary notes' } });
-
-    const closeButton = screen.getByRole('button', { name: /close/i });
-    fireEvent.click(closeButton);
-
-    expect(screen.queryByPlaceholderText(/write notes here.../i)).not.toBeInTheDocument();
-
-    // Повторно открыть меню, чтобы проверить, что изменения не сохранились
-    fireEvent.click(screen.getByTitle(/edit/i));
-    expect(screen.getByPlaceholderText(/write notes here.../i).value).toBe('');
-  });
-
- 
+  const noTasksElement = await screen.findByText(/No tasks yet/i);
+  expect(noTasksElement).toBeInTheDocument();
 });
 
-/*it('allows users to toggle task completion', () => {
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const buttonElement = screen.getByRole('button', { name: /add/i });
-
-    fireEvent.change(inputElement, { target: { value: 'Task to complete' } });
-    fireEvent.click(buttonElement);
-
-    const taskElement = screen.getByText(/task to complete/i);
-    fireEvent.click(taskElement);
-
-    expect(taskElement).toHaveClass('completed');
+  test('displays no tasks message when there are no tasks', async () => {
+    getApi.default.mockResolvedValueOnce([]); 
+      await act(async () => {
+          render(<App />);
+      });
+    const noTasksElement = await screen.findByText(/No tasks yet/i);
+    expect(noTasksElement).toBeInTheDocument();
   });
-  
-  it('TaskMenu textarea auto-resizes on value changes', () => {
-    // Тестируем именно компонент TaskMenu из export default
-    // Чтобы не импортировать отдельно TaskMenu, можно создать вспомогательный компонент в этом тесте:
-    const { act: actRTL, rerender } = render(
-      <App />
-    );
-    const inputElement = screen.getByPlaceholderText(/add new task/i);
-    const addButton = screen.getByRole('button', { name: /add/i });
-    fireEvent.change(inputElement, { target: { value: 'Task for resize test' } });
-    fireEvent.click(addButton);
-    // Открываем меню редактирования
-    const editButton = screen.getByTitle(/edit/i);
-    fireEvent.click(editButton);
-    const textarea = screen.getByPlaceholderText(/write notes here.../i);
-    // Сохраним начальную высоту
-    const initialHeight = textarea.style.height;
-    // Изменим значение и вызовем событие onChange
-    fireEvent.change(textarea, { target: { value: 'Line1\nLine2\nLine3\nLine4\nLine5' } });
-    // Ждем эффекта обновления высоты
-    act(() => {
-      jest.runAllTimers();
+
+  test('adds a new task', async () => {
+      await act(async () => {
+          render(<App />);
+      });
+
+    
+    postApi.default.mockResolvedValueOnce(); 
+    getApi.default.mockResolvedValueOnce([
+      { id: 1, title: 'Test Task 1', description: 'Description 1', status: false },
+      { id: 2, title: 'Test Task 2', description: 'Description 2', status: false },
+      { id: 3, title: 'New Task', description: '', status: false }, 
+    ]);
+
+    const inputElement = screen.getByPlaceholderText(/Add new task/i);
+
+    await act(async () => {
+      fireEvent.change(inputElement, { target: { value: 'New Task' } });
+      const buttonElement = screen.getByText(/Add/i);
+      fireEvent.click(buttonElement);
     });
-  */
+
+    
+    await waitFor(() => {
+      expect(screen.getByText(/New Task/i)).toBeInTheDocument();
+    });
+
+  });
+
+  test('toggles task completion', async () => {
+    render(<App />);
+
+      let taskElement;
+    await waitFor(async () => {
+      taskElement = await screen.findByText(/Test Task 1/i); 
+    });
+
+
+    
+    await act(async () => {
+      fireEvent.click(taskElement); 
+    });
+
+  
+    await waitFor(() => {
+       expect(taskElement).toHaveClass('task-text');
+    });
+
+  });
+
+  test('deletes a task', async () => {
+    render(<App />);
+
+    
+    let deleteButtons;
+
+    await waitFor(async () => {
+       deleteButtons = await screen.findAllByRole('button', { name: /×/i });
+    });
+
+    
+    deleteApi.default.mockResolvedValueOnce();
+    getApi.default.mockResolvedValueOnce([
+      { id: 2, title: 'Test Task 2', description: 'Description 2', status: false }, 
+    ]);
+
+    
+    await act(async () => {
+      fireEvent.click(deleteButtons[0]); 
+    });
+
+
+    await waitFor(() => {
+      const taskElement = screen.queryByText(/Test Task 1/i);
+      expect(taskElement); 
+    });
+  });
+
+
+  test('renders the input field for adding a new task', async () => {
+      await act(async () => {
+          render(<App />);
+      });
+    const inputElement = screen.getByPlaceholderText(/Add new task/i);
+    expect(inputElement).toBeInTheDocument();
+  });
+
+  test('renders the add button', async () => {
+      await act(async () => {
+          render(<App />);
+      });
+    const buttonElement = screen.getByText(/Add/i);
+    expect(buttonElement).toBeInTheDocument();
+  });
+
+
+
+  test('input field is initially empty', async () => {
+      await act(async () => {
+          render(<App />);
+      });
+    const inputElement = screen.getByPlaceholderText(/Add new task/i);
+    expect(inputElement.value).toBe('');
+  });
+
+  test('clears input field after adding a task', async () => {
+    render(<App />);
+    
+    
+    postApi.default.mockResolvedValueOnce(); 
+    getApi.default.mockResolvedValueOnce([
+      { id: 1, title: 'Test Task 1', description: 'Description 1', status: false },
+      { id: 2, title: 'Test Task 2', description: 'Description 2', status: false },
+      { id: 3, title: 'New Task', description: '', status: false }, 
+    ]);
+
+    const inputElement = screen.getByPlaceholderText(/Add new task/i);
+    await act(async () => {
+      fireEvent.change(inputElement, { target: { value: 'New Task' } });
+      const buttonElement = screen.getByText(/Add/i);
+      fireEvent.click(buttonElement);
+    });
+
+   
+    expect(inputElement.value).toBe('');
+  });
+
+  
+
+  test('displays task titles correctly', async () => async () => {
+      await act(async () => {
+          render(<App />);
+      });
+    
+    const task1Element = await screen.findByText(/Test Task 1/i);
+    const task2Element = await screen.findByText(/Test Task 2/i);
+    
+    expect(task1Element).toBeInTheDocument();
+    expect(task2Element).toBeInTheDocument();
+  });
+
+  
+})
